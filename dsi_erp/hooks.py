@@ -44,9 +44,10 @@ app_license = "mit"
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_list_js = {"Interview" : "public/js/interview_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
+
 
 # Svg Icons
 # ------------------
@@ -143,6 +144,18 @@ app_license = "mit"
 # 		"on_cancel": "method",
 # 		"on_trash": "method"
 # 	}
+# }
+doc_events = {
+    "*": {
+        "onload": "dsi_erp.restrictions.employee_restriction.restrict_top_level_employee_doc"
+    }
+}
+# doc_events = {
+#     "*": {
+#         "onload": "dsi_erp.restrictions.tlm_hide.restrict_top_level_employee_doc",
+#         # "before_submit": "dsi_erp.restrictions.tlm_hide.restrict_top_level_employee_doc",
+#         # "validate": "your_app.path.to.restrict_top_level_employee_doc",
+#     }
 # }
 
 # Scheduled Tasks
