@@ -1,0 +1,13 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Employee",
+  "enabled": 1,
+  "modified": "2025-08-03 16:15:28.654322",
+  "module": "Dsi Erp",
+  "name": "Calculate Profile Completion",
+  "script": "frappe.ui.form.on('Employee', {\r\n    refresh: function(frm) {\r\n        if (frm.doc.__islocal !== 1) {\r\n            calculate_profile_completion(frm);\r\n        }\r\n    },\r\n\r\n    validate: function(frm) {\r\n        calculate_profile_completion(frm);\r\n    }\r\n});\r\n\r\nfunction calculate_profile_completion(frm) {\r\n    let fields_to_check = [\r\n        'first_name', 'cell_number', 'person_to_be_contacted', 'relation', 'marital_status',\r\n        'blood_group', 'family_background', 'health_details', 'emergency_phone_number',\r\n        'image', 'personal_email', 'company_email', 'bio', 'education', 'external_work_history',\r\n        'internal_work_history', 'passport_number', 'valid_upto', 'civil_id', 'civil_idexpiry',\r\n        'gender', 'salutation', 'bank_name', 'bank_ac_no'\r\n    ];\r\n\r\n    let total_fields = fields_to_check.length;\r\n    let filled_fields = 0;\r\n\r\n    fields_to_check.forEach(function(field) {\r\n        if (frm.doc[field]) {\r\n            filled_fields++;\r\n        }\r\n    });\r\n\r\n    let completion_percentage = (filled_fields / total_fields) * 100;\r\n    let rounded_percentage = Math.round(completion_percentage);\r\n\r\n    frm.set_value('custom_profile_completion_percentage', rounded_percentage);\r\n    frm.set_df_property('completion_percentage_display', 'options', `Profile Completion: ${rounded_percentage}%`);\r\n\r\n    let indicator_color = rounded_percentage === 100 ? 'green' : 'orange';\r\n    frm.dashboard.set_headline_alert(`Profile Completion: ${rounded_percentage}%`, indicator_color);\r\n}\r\n",
+  "view": "Form"
+ }
+]
