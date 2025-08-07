@@ -1,0 +1,57 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-31 13:47:56.529201",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "emergency_contact_name",
+  "relation",
+  "column_break_dukp",
+  "emergency_phone",
+  "email"
+ ],
+ "fields": [
+  {
+   "fieldname": "emergency_contact_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Emergency Contact Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "relation",
+   "fieldtype": "Data",
+   "label": "Relation"
+  },
+  {
+   "fieldname": "column_break_dukp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "emergency_phone",
+   "fieldtype": "Data",
+   "label": "Emergency Phone"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-08-02 13:23:48.337323",
+ "modified_by": "Administrator",
+ "module": "Dsi Erp",
+ "name": "Emergency Contact",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
