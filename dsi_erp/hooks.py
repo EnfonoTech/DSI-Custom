@@ -44,7 +44,7 @@ fixtures= ["Client Script","Print Format"]
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_list_js = {"Interview" : "public/js/interview_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -145,10 +145,22 @@ fixtures= ["Client Script","Print Format"]
 # 	}
 # }
 doc_events = {
+    "*": {
+        "onload": "dsi_erp.restrictions.employee_restriction.restrict_top_level_employee_doc"
+    }
+}
+doc_events = {
 	"Employee": {
 		"on_update": "dsi_erp.dsi_erp.doctype.renewable_document.renewable_document.on_employee_update"
 	}
 }
+# doc_events = {
+#     "*": {
+#         "onload": "dsi_erp.restrictions.tlm_hide.restrict_top_level_employee_doc",
+#         # "before_submit": "dsi_erp.restrictions.tlm_hide.restrict_top_level_employee_doc",
+#         # "validate": "your_app.path.to.restrict_top_level_employee_doc",
+#     }
+# }
 
 # Scheduled Tasks
 # ---------------
