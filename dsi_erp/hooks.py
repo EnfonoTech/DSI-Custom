@@ -4,7 +4,7 @@ app_publisher = "Siva"
 app_description = "Dsi Erp"
 app_email = "siva@enfono.in"
 app_license = "mit"
-
+fixtures= ["Client Script","Print Format"]
 # Apps
 # ------------------
 
@@ -47,7 +47,6 @@ app_license = "mit"
 doctype_list_js = {"Interview" : "public/js/interview_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
-
 
 # Svg Icons
 # ------------------
@@ -149,6 +148,11 @@ doc_events = {
     "*": {
         "onload": "dsi_erp.restrictions.employee_restriction.restrict_top_level_employee_doc"
     }
+}
+doc_events = {
+	"Employee": {
+		"on_update": "dsi_erp.dsi_erp.doctype.renewable_document.renewable_document.on_employee_update"
+	}
 }
 # doc_events = {
 #     "*": {
