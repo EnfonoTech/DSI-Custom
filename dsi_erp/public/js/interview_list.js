@@ -15,7 +15,7 @@ frappe.listview_settings['Interview'] = {
         },
         action(doc) {
             frappe.call({
-                method: 'dsi_erp.hrms.interview.notifications.send_interview_notifications',
+                method: 'dsi_erp.dsi_erp.hrms.interview.notifications.send_interview_notifications',
                 args: {
                     interviews: doc.name
                 },

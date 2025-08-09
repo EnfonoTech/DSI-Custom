@@ -7,10 +7,6 @@ def restrict_top_level_employee_doc(doc, method=None):
     if "CFO" in user_roles:
         return  # CFO can access all
 
-    # Optional: Block even Administrator
-    if user == "Administrator":
-        frappe.throw("Access Denied: Admin not allowed to view Top Management data.")
-
     # Case 1: The document itself is Employee
     if doc.doctype == "Employee" and doc.get("custom_top_level_managment"):
         frappe.throw("Access Denied: You are not authorized to access this Top Management employee.")
