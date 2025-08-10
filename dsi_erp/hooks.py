@@ -147,13 +147,16 @@ doctype_list_js = {"Interview" : "public/js/interview_list.js"}
 doc_events = {
     "*": {
         "onload": "dsi_erp.restrictions.employee_restriction.restrict_top_level_employee_doc"
-    }
-}
-doc_events = {
-	"Employee": {
+    },
+    "Employee": {
 		"on_update": "dsi_erp.dsi_erp.doctype.renewable_document.renewable_document.on_employee_update"
 	}
 }
+# doc_events = {
+# 	"Employee": {
+# 		"on_update": "dsi_erp.dsi_erp.doctype.renewable_document.renewable_document.on_employee_update"
+# 	}
+# }
 # doc_events = {
 #     "*": {
 #         "onload": "dsi_erp.restrictions.tlm_hide.restrict_top_level_employee_doc",
