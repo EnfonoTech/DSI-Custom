@@ -45,6 +45,10 @@ fixtures= ["Client Script","Print Format"]
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_list_js = {"Interview" : "public/js/interview_list.js"}
+
+doctype_js = {
+    "BOM": "public/js/bom_items.js"
+}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
