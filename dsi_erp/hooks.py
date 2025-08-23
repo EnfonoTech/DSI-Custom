@@ -47,7 +47,8 @@ fixtures= ["Client Script","Print Format"]
 doctype_list_js = {"Interview" : "public/js/interview_list.js"}
 
 doctype_js = {
-    "BOM": "public/js/bom_items.js"
+    "BOM": "public/js/bom_items.js",
+    "Quotation": "dsi_erp/quotation/quotation.js"
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}

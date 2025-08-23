@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-08-15 16:50:45.195438",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "parameters",
+  "materials_specifications",
+  "image"
+ ],
+ "fields": [
+  {
+   "fieldname": "parameters",
+   "fieldtype": "Data",
+   "label": "Parameters"
+  },
+  {
+   "fieldname": "materials_specifications",
+   "fieldtype": "Text Editor",
+   "label": "Materials Specifications"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-08-16 10:46:00.642209",
+ "modified_by": "Administrator",
+ "module": "Dsi Erp",
+ "name": "Building Standard",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
