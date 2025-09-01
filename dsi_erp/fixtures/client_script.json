@@ -2,6 +2,28 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "BOM",
+  "enabled": 1,
+  "modified": "2025-09-01 12:40:12.276802",
+  "module": "Dsi Erp",
+  "name": "BOM Customization",
+  "script": "frappe.ui.form.on('BOM', {\r\n    custom_profit_percentage: function(frm) {\r\n        calculate_net_cost(frm);\r\n    },\r\n    total_cost: function(frm) {\r\n        calculate_net_cost(frm);\r\n    }\r\n});\r\n\r\nfunction calculate_net_cost(frm) {\r\n    let total = frm.doc.total_cost || 0;\r\n    let profit_percent = frm.doc.custom_profit_percentage || 0;\r\n\r\n    let net_cost = total + (total * profit_percent / 100);\r\n\r\n    frm.set_value(\"custom_net_cost\", net_cost);\r\n}\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Quotation",
+  "enabled": 1,
+  "modified": "2025-09-01 12:39:57.605336",
+  "module": "Dsi Erp",
+  "name": "Rate hide in quotation",
+  "script": "frappe.ui.form.on(\"Quotation\", {\r\n    refresh(frm) {\r\n        toggle_rate_field(frm);\r\n    },\r\n    custom_cost_based_on_estimation(frm) {\r\n        toggle_rate_field(frm);\r\n    }\r\n});\r\n\r\nfunction toggle_rate_field(frm) {\r\n    frm.fields_dict.items.grid.update_docfield_property(\r\n        \"rate\",\r\n        \"read_only\",\r\n        frm.doc.custom_cost_based_on_estimation == 1 ? 1 : 0\r\n    );\r\n}\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Employee",
   "enabled": 1,
   "modified": "2025-08-03 16:15:28.654322",
@@ -37,7 +59,7 @@
   "doctype": "Client Script",
   "dt": "BOM",
   "enabled": 1,
-  "modified": "2025-08-27 12:09:56.421552",
+  "modified": "2025-09-01 12:40:59.104746",
   "module": "Dsi Erp",
   "name": "Depending Calculation in BOM",
   "script": "\r\n// --- Child table triggers ---\r\nconst fetch_all_dependencies_debounced = frappe.utils.debounce(fetch_all_dependencies, 300);\r\n\r\nfrappe.ui.form.on(\"BOM Item\", {\r\n    qty(frm) {\r\n        if (frm._updating_dep_qty) return;   // prevent loop\r\n        fetch_all_dependencies_debounced(frm);\r\n    },\r\n    item_code(frm) {\r\n        if (frm._updating_dep_qty) return;   // prevent loop\r\n        fetch_all_dependencies_debounced(frm);\r\n    },\r\n    items_remove(frm) {\r\n        if (frm._updating_dep_qty) return;   // prevent loop\r\n        fetch_all_dependencies_debounced(frm);\r\n    }\r\n});\r\n\r\n// --- Core logic ---\r\nasync function fetch_all_dependencies(frm) {\r\n    // if another update is running, skip this run\r\n    if (frm._updating_dep_qty) return;\r\n\r\n    frm._updating_dep_qty = true;  // 🔒 enter critical section\r\n    try {\r\n        const dep_qty_map = {};\r\n        const rows = (frm.doc.items || []).filter(r => r.item_code && flt(r.qty));\r\n\r\n        // Get dependencies for each BOM item and accumulate totals per dependent item\r\n        for (const row of rows) {\r\n            const r = await frappe.call({\r\n                method: \"frappe.client.get\",\r\n                args: { doctype: \"Item\", name: row.item_code }\r\n            });\r\n            const item_doc = r.message;\r\n            const deps = (item_doc && item_doc.custom_depending_items) || [];\r\n\r\n            deps.forEach(dep => {\r\n                if (!dep.item || !dep.quantity) return;\r\n                const code = dep.item;\r\n                const add_qty = flt(row.qty) * flt(dep.quantity);\r\n                dep_qty_map[code] = (dep_qty_map[code] || 0) + add_qty;\r\n            });\r\n        }\r\n\r\n        // Apply updates only when needed (avoid triggering events unnecessarily)\r\n        let any_change = false;\r\n        for (const [code, total] of Object.entries(dep_qty_map)) {\r\n            const target = (frm.doc.items || []).find(i => i.item_code === code);\r\n            if (!target) continue; // only update items that already exist in BOM\r\n\r\n            const current = flt(target.qty);\r\n            const desired = flt(total);\r\n            if (current !== desired) {\r\n                frappe.model.set_value(target.doctype, target.name, \"qty\", desired);\r\n                any_change = true;\r\n            }\r\n        }\r\n\r\n        if (any_change) frm.refresh_field(\"items\");\r\n\r\n    } catch (e) {\r\n        console.error(\"Fetch Dependent Qty error:\", e);\r\n        frappe.msgprint(__(\"Could not update dependent quantities.\"));\r\n    } finally {\r\n        frm._updating_dep_qty = false; // 🔓 leave critical section\r\n    }\r\n}",

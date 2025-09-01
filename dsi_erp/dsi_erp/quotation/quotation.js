@@ -1,28 +1,40 @@
 // DSI ERP - Quotation BOM Rate Fetching
 // Field name: custom_bom_rate
 
+// Function to check if quotation is submitted
+function is_quotation_submitted(frm) {
+    return frm.doc.docstatus === 1; // 1 means submitted
+}
+
 frappe.ui.form.on('Quotation', {
     refresh: function(frm) {
-        // Add Update BOM Cost button
-        if (!frm.custom_buttons || !frm.custom_buttons.update_bom_cost) {
-            frm.add_custom_button(__('Update Cost'), function() {
-                update_all_items_bom_cost(frm);
-            });
-            
-            frm.custom_buttons.update_bom_cost = true;
-        }
-    },
-    
-    custom_profit_percentage: function(frm) {
-        // Recalculate rates when profit percentage changes
-        if (frm.doc.custom_profit_percentage && frm.doc.items) {
-            recalculate_rates_with_profit(frm);
+        // Only add Update BOM Cost button if quotation is not submitted
+        if (!is_quotation_submitted(frm)) {
+            if (!frm.custom_buttons || !frm.custom_buttons.update_bom_cost) {
+                frm.add_custom_button(__('Update Cost'), function() {
+                    update_all_items_bom_cost(frm);
+                });
+                
+                frm.custom_buttons.update_bom_cost = true;
+            }
+        } else {
+            // Remove the button if quotation is submitted
+            if (frm.custom_buttons && frm.custom_buttons.update_bom_cost) {
+                frm.remove_custom_button(__('Update Cost'));
+                frm.custom_buttons.update_bom_cost = false;
+            }
         }
     }
+    // Removed custom_profit_percentage event handler as profit percentage is no longer used
 });
 
 frappe.ui.form.on('Quotation Item', {
     item_code: function(frm, cdt, cdn) {
+        // Only fetch BOM rate if quotation is not submitted
+        if (is_quotation_submitted(frm)) {
+            return;
+        }
+        
         let item = locals[cdt][cdn];
         if (item.item_code) {
             fetch_bom_rate_for_item(frm, item);
@@ -30,6 +42,11 @@ frappe.ui.form.on('Quotation Item', {
     },
     
     items_add: function(frm) {
+        // Only fetch BOM rate if quotation is not submitted
+        if (is_quotation_submitted(frm)) {
+            return;
+        }
+        
         let new_item = frm.doc.items[frm.doc.items.length - 1];
         if (new_item.item_code) {
             fetch_bom_rate_for_item(frm, new_item);
@@ -39,6 +56,12 @@ frappe.ui.form.on('Quotation Item', {
 
 // Fetch BOM rate for single item
 function fetch_bom_rate_for_item(frm, item) {
+    // Check if quotation is submitted before proceeding
+    if (is_quotation_submitted(frm)) {
+        frappe.msgprint(__('Cannot update costs after quotation is submitted.'));
+        return;
+    }
+    
     if (!item.item_code || !frm.doc.company) return;
     
     frappe.call({
@@ -46,24 +69,21 @@ function fetch_bom_rate_for_item(frm, item) {
         args: {
             item_code: item.item_code,
             company: frm.doc.company,
-            quotation_name: frm.doc.name,
-            current_profit_percentage: frm.doc.custom_profit_percentage
+            quotation_name: frm.doc.name
+            // Removed current_profit_percentage as profit percentage is no longer used
         },
         callback: function(r) {
-            if (r.message && r.message.custom_bom_rate) {
-                // Update the custom_bom_rate field
-                frappe.model.set_value('Quotation Item', item.name, 'custom_bom_rate', r.message.custom_bom_rate);
+            if (r.message && r.message.rate) {
+                // Update the main rate field directly from BOM custom_net_cost
+                frappe.model.set_value('Quotation Item', item.name, 'rate', r.message.rate);
                 
-                // Update the main rate field with final rate (including profit)
-                if (r.message.final_rate) {
-                    frappe.model.set_value('Quotation Item', item.name, 'rate', r.message.final_rate);
+                // Set custom_cost_based_on_estimation to 1 when cost is updated from BOM
+                if (!frm.doc.custom_cost_based_on_estimation) {
+                    frappe.model.set_value('Quotation', frm.doc.name, 'custom_cost_based_on_estimation', 1);
                 }
                 
-                // Show success message with details
-                let message = `BOM Rate: ${r.message.custom_bom_rate}`;
-                if (r.message.profit_percentage > 0) {
-                    message += ` | Final Rate: ${r.message.final_rate} (${r.message.profit_percentage}% profit)`;
-                }
+                // Show success message with rate
+                let message = `Rate updated from BOM: ${r.message.rate}`;
                 
                 frappe.show_alert({
                     message: __(message),
@@ -76,16 +96,18 @@ function fetch_bom_rate_for_item(frm, item) {
 
 // Update all items BOM cost
 function update_all_items_bom_cost(frm) {
+    // Check if quotation is submitted before proceeding
+    if (is_quotation_submitted(frm)) {
+        frappe.msgprint(__('Cannot update costs after quotation is submitted.'));
+        return;
+    }
+    
     if (!frm.doc.items || frm.doc.items.length === 0) {
         frappe.msgprint(__('No items found in quotation.'));
         return;
     }
     
-    // Show current profit percentage being used
-    let current_profit = frm.doc.custom_profit_percentage || 0;
-    if (current_profit > 0) {
-        frappe.msgprint(__('Using current profit percentage: {0}%', [current_profit]));
-    }
+    // Using BOM custom_net_cost directly
     
     // Show progress
     frm.dashboard.show_progress('Updating BOM Costs', 0, 100);
@@ -109,17 +131,13 @@ function update_all_items_bom_cost(frm) {
             args: {
                 item_code: item.item_code,
                 company: frm.doc.company,
-                quotation_name: frm.doc.name,
-                current_profit_percentage: frm.doc.custom_profit_percentage
+                quotation_name: frm.doc.name
+                // Removed current_profit_percentage as profit percentage is no longer used
             },
             callback: function(r) {
-                if (r.message && r.message.custom_bom_rate) {
-                    frappe.model.set_value('Quotation Item', item.name, 'custom_bom_rate', r.message.custom_bom_rate);
-                    
-                    // Update the main rate field with final rate (including profit)
-                    if (r.message.final_rate) {
-                        frappe.model.set_value('Quotation Item', item.name, 'rate', r.message.final_rate);
-                    }
+                if (r.message && r.message.rate) {
+                    // Update the main rate field directly from BOM custom_net_cost
+                    frappe.model.set_value('Quotation Item', item.name, 'rate', r.message.rate);
                     
                     updated_count++;
                 }
@@ -134,10 +152,12 @@ function update_all_items_bom_cost(frm) {
                     frm.refresh_field('items');
                     
                     if (updated_count > 0) {
-                        let message = `Updated BOM rates for ${updated_count} items`;
-                        if (frm.doc.custom_profit_percentage > 0) {
-                            message += ` with ${frm.doc.custom_profit_percentage}% profit margin`;
+                        // Set custom_cost_based_on_estimation to 1 when costs are updated from BOM
+                        if (!frm.doc.custom_cost_based_on_estimation) {
+                            frappe.model.set_value('Quotation', frm.doc.name, 'custom_cost_based_on_estimation', 1);
                         }
+                        
+                        let message = `Updated rates for ${updated_count} items from BOM`;
                         frappe.msgprint(__(message));
                     } else {
                         frappe.msgprint(__('No BOM rates found for the items.'));
@@ -150,6 +170,12 @@ function update_all_items_bom_cost(frm) {
 
 // Alternative: Batch update method for better performance
 function update_all_items_bom_cost_batch(frm) {
+    // Check if quotation is submitted before proceeding
+    if (is_quotation_submitted(frm)) {
+        frappe.msgprint(__('Cannot update costs after quotation is submitted.'));
+        return;
+    }
+    
     if (!frm.doc.items || frm.doc.items.length === 0) {
         frappe.msgprint(__('No items found in quotation.'));
         return;
@@ -186,12 +212,8 @@ function update_all_items_bom_cost_batch(frm) {
                         let bom_rate = r.message.bom_rates[item.item_code];
                         frappe.model.set_value('Quotation Item', item.name, 'bom_rate', bom_rate);
                         
-                        // Calculate final rate with current profit percentage from form
-                        let profit_percentage = frm.doc.custom_profit_percentage || 0;
-                        if (profit_percentage > 0) {
-                            let final_rate = bom_rate * (1 + profit_percentage / 100);
-                            frappe.model.set_value('Quotation Item', item.name, 'rate', final_rate);
-                        }
+                        // Set final rate as direct BOM cost (no profit percentage)
+                        frappe.model.set_value('Quotation Item', item.name, 'rate', bom_rate);
                         
                         updated_count++;
                     }
@@ -200,10 +222,7 @@ function update_all_items_bom_cost_batch(frm) {
                 frm.refresh_field('items');
                 
                 if (updated_count > 0) {
-                    let message = `Updated BOM rates for ${updated_count} items`;
-                    if (frm.doc.custom_profit_percentage > 0) {
-                        message += ` with ${frm.doc.custom_profit_percentage}% profit margin`;
-                    }
+                    let message = `Updated BOM rates for ${updated_count} items (direct BOM costs, no profit margin)`;
                     frappe.msgprint(__(message));
                 } else {
                     frappe.msgprint(__('No BOM rates found for the items.'));
@@ -214,26 +233,4 @@ function update_all_items_bom_cost_batch(frm) {
     });
 }
 
-// Function to recalculate rates with profit percentage
-function recalculate_rates_with_profit(frm) {
-    if (!frm.doc.custom_profit_percentage || !frm.doc.items) return;
-    
-    let updated_count = 0;
-    
-    frm.doc.items.forEach(function(item) {
-        if (item.custom_bom_rate && item.custom_bom_rate > 0) {
-            let final_rate = item.custom_bom_rate * (1 + frm.doc.custom_profit_percentage / 100);
-            frappe.model.set_value('Quotation Item', item.name, 'rate', final_rate);
-            updated_count++;
-        }
-    });
-    
-    if (updated_count > 0) {
-        frm.refresh_field('items');
-        frappe.show_alert({
-            message: __(`Recalculated rates for {0} items with {1}% profit margin`, 
-                [updated_count, frm.doc.custom_profit_percentage]),
-            indicator: 'blue'
-        }, 5);
-    }
-}
+// Removed recalculate_rates_with_profit function as profit percentage is no longer used
