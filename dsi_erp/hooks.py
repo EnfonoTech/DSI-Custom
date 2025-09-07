@@ -49,7 +49,7 @@ doctype_list_js = {"Interview" : "public/js/interview_list.js"}
 doctype_js = {
     "BOM": "public/js/bom_items.js",
     "Quotation": "dsi_erp/quotation/quotation.js",
-    "Item": "dsi_erp/item/item.js"
+    "Item": "item/item.js"
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -157,6 +157,10 @@ doc_events = {
     "Employee": {
 		"on_update": "dsi_erp.dsi_erp.doctype.renewable_document.renewable_document.on_employee_update"
 	},
+    "Item": {
+        "validate": "dsi_erp.item_helpers.validate",
+        "on_update": "dsi_erp.item_helpers.on_update"
+    }
 
 }
 # doc_events = {
