@@ -22,7 +22,7 @@ function calculate_total_operation_cost(frm, cdt, cdn) {
     );
 
     frappe.model.set_value(cdt, cdn, "hour_rate",
-        (row.custom_daily_rate || 0) * (row.custom_daily_operation_hours || 0)
+        (row.custom_daily_rate || 0) / (row.custom_daily_operation_hours || 0)
     );
 
     // now recalc totals for all operations
