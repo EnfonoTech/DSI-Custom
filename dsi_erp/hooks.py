@@ -160,6 +160,9 @@ doc_events = {
     "Item": {
         "validate": "dsi_erp.item_helpers.validate",
         "on_update": "dsi_erp.item_helpers.on_update"
+    },
+    "Workflow Action": {
+        "after_insert": "dsi_erp.approvel_todo.approvel_todo.create_todo_for_approval"
     }
 
 }
