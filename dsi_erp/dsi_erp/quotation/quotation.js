@@ -24,6 +24,62 @@ frappe.ui.form.on('Quotation', {
                 frm.custom_buttons.update_bom_cost = false;
             }
         }
+    },
+    custom_responsibility_matrix_template: function(frm) {
+        if (is_quotation_submitted(frm)) {
+            frappe.msgprint(__('Cannot change Responsibility Matrix after submission.'));
+            return;
+        }
+
+        if (!frm.doc.custom_responsibility_matrix_template) {
+            frm.clear_table('custom_matrix_item');
+            frm.refresh_field('custom_matrix_item');
+            return;
+        }
+
+        frappe.db.get_doc('Responsible Matrix Template', frm.doc.custom_responsibility_matrix_template)
+            .then(function(template_doc) {
+                frm.clear_table('custom_matrix_item');
+                (template_doc.table_ipvb || []).forEach(function(row) {
+                    let child = frm.add_child('custom_matrix_item');
+                    child.description = row.description;
+                    child.client_scope = row.client_scope;
+                    child.dsi_scope = row.dsi_scope;
+                    child.remarks = row.remarks;
+                });
+                frm.refresh_field('custom_matrix_item');
+            })
+            .catch(function(e){
+                frappe.msgprint(__('Failed to fetch template: {0}', [e.message || e]));
+            });
+    },
+    // Populate Prefab Building Standard and Specification from template
+    custom_standard_and_specification_template: function(frm) {
+        if (is_quotation_submitted(frm)) {
+            frappe.msgprint(__('Cannot change Standard and Specification after submission.'));
+            return;
+        }
+
+        if (!frm.doc.custom_standard_and_specification_template) {
+            frm.clear_table('custom_specification');
+            frm.refresh_field('custom_specification');
+            return;
+        }
+
+        frappe.db.get_doc('Building Standard Template', frm.doc.custom_standard_and_specification_template)
+            .then(function(template_doc) {
+                frm.clear_table('custom_specification');
+                (template_doc.building_standard || []).forEach(function(row) {
+                    let child = frm.add_child('custom_specification');
+                    child.parameters = row.parameters;
+                    child.materials_specifications = row.materials_specifications;
+                    child.image = row.image;
+                });
+                frm.refresh_field('custom_specification');
+            })
+            .catch(function(e){
+                frappe.msgprint(__('Failed to fetch template: {0}', [e.message || e]));
+            });
     }
     // Removed custom_profit_percentage event handler as profit percentage is no longer used
 });
