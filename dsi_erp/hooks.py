@@ -154,17 +154,17 @@ doc_events = {
     "*": {
         "onload": "dsi_erp.restrictions.employee_restriction.restrict_top_level_employee_doc"
     },
+    "Daily Timesheet": {
+        "on_submit": "dsi_erp.dsi_erp.doctype.daily_timesheet.daily_timesheet.create_timesheets"
+    },
     "Employee": {
 		"on_update": "dsi_erp.dsi_erp.doctype.renewable_document.renewable_document.on_employee_update"
 	},
     "Item": {
+        "autoname": "dsi_erp.item_helpers.autoname",
         "validate": "dsi_erp.item_helpers.validate",
         "on_update": "dsi_erp.item_helpers.on_update"
-    },
-    "Workflow Action": {
-        "after_insert": "dsi_erp.approvel_todo.approvel_todo.create_todo_for_approval"
     }
-
 }
 # doc_events = {
 # 	"Employee": {

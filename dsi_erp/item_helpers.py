@@ -162,3 +162,18 @@ def get_item_code_preview(item_group, current_item=None):
         return ""
     except Exception as e:
         frappe.throw(f"Error generating preview: {str(e)}")
+# dsi_erp/item_helpers.py
+
+def autoname(doc, method):
+    """
+    Automatically generate item_code (name) before insert
+    """
+    if not doc.item_group:
+        frappe.throw("Item Group is required to generate Item Code")
+
+    prefix = build_prefix(doc.item_group)
+    if not prefix:
+        prefix = "ITEM"
+
+    doc.name = get_next_available_item_code(prefix)
+    doc.item_code = doc.name
